@@ -1,0 +1,30 @@
+# RL Agent Configuration
+
+agent:
+  state_dim: 8  # [work_bw, entertain_bw, work_lat, entertain_lat, work_loss, entertain_loss, total_bw, time]
+  action_dim: 3  # [0: Work Priority, 1: Balanced, 2: Entertainment Priority]
+
+network:
+  hidden_layers: [128, 128, 64]
+  activation: relu
+  dropout: 0.1
+
+training:
+  episodes: 1000
+  max_steps: 200
+  batch_size: 64
+  learning_rate: 0.0001
+  gamma: 0.99
+  epsilon_start: 1.0
+  epsilon_end: 0.01
+  epsilon_decay: 0.995
+  memory_size: 100000
+  target_update_freq: 10
+  save_freq: 50
+
+rewards:
+  qos_satisfaction: 10.0
+  bandwidth_efficiency: 2.0
+  packet_loss_penalty: 10.0
+  latency_penalty: 5.0
+  policy_stability: 1.0

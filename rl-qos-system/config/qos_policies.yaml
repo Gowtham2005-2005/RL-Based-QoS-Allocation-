@@ -1,0 +1,41 @@
+# QoS Policies Configuration
+
+# Device role classification
+device_roles:
+  work:
+    - "10.0.0.1"
+    - "10.0.0.2"
+  entertainment:
+    - "10.0.0.3"
+    - "10.0.0.4"
+
+# QoS Queue Configuration
+queues:
+  - id: 0
+    name: high_priority
+    min_rate: 700Mbps
+    max_rate: 1000Mbps
+    
+  - id: 1
+    name: normal_priority
+    min_rate: 500Mbps
+    max_rate: 1000Mbps
+    
+  - id: 2
+    name: low_priority
+    min_rate: 300Mbps
+    max_rate: 1000Mbps
+
+# RL Action to QoS Policy Mapping
+action_policies:
+  0:  # Work Priority
+    work: 0  # Queue 0 (high)
+    entertainment: 2  # Queue 2 (low)
+    
+  1:  # Balanced
+    work: 1  # Queue 1 (normal)
+    entertainment: 1  # Queue 1 (normal)
+    
+  2:  # Entertainment Priority
+    work: 2  # Queue 2 (low)
+    entertainment: 0  # Queue 0 (high)

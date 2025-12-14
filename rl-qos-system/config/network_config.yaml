@@ -1,0 +1,35 @@
+# Network Topology Configuration
+
+topology:
+  name: "rl_qos_topology"
+  
+switches:
+  - name: s1
+    dpid: 1
+    protocol: OpenFlow13
+    
+hosts:
+  work:
+    - name: h1
+      ip: 10.0.0.1/24
+      mac: "00:00:00:00:00:01"
+    - name: h2
+      ip: 10.0.0.2/24
+      mac: "00:00:00:00:00:02"
+      
+  entertainment:
+    - name: h3
+      ip: 10.0.0.3/24
+      mac: "00:00:00:00:00:03"
+    - name: h4
+      ip: 10.0.0.4/24
+      mac: "00:00:00:00:00:04"
+
+links:
+  bandwidth: 100  # Mbps
+  delay: 1ms
+  loss: 0
+
+controller:
+  ip: 127.0.0.1
+  port: 6653

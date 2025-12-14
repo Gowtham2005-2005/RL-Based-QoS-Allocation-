@@ -1,0 +1,93 @@
+# Traffic Classification Domain Database
+
+work_domains:
+  # Video Conferencing
+  - zoom.us
+  - meet.google.com
+  - teams.microsoft.com
+  - webex.com
+  - gotomeeting.com
+  
+  # Cloud Services
+  - aws.amazon.com
+  - azure.microsoft.com
+  - cloud.google.com
+  - dropbox.com
+  - box.com
+  - onedrive.com
+  - drive.google.com
+  
+  # Development
+  - github.com
+  - gitlab.com
+  - bitbucket.org
+  - stackoverflow.com
+  - docker.com
+  - npmjs.com
+  
+  # Productivity
+  - office.com
+  - docs.google.com
+  - sheets.google.com
+  - slack.com
+  - asana.com
+  - trello.com
+  - notion.so
+  - monday.com
+  
+  # Email & Communication
+  - gmail.com
+  - outlook.com
+  - mail.yahoo.com
+
+entertainment_domains:
+  # Video Streaming
+  - youtube.com
+  - youtu.be
+  - googlevideo.com
+  - netflix.com
+  - nflxvideo.net
+  - hulu.com
+  - disneyplus.com
+  - primevideo.com
+  - hbomax.com
+  - twitch.tv
+  - vimeo.com
+  
+  # Music Streaming
+  - spotify.com
+  - music.apple.com
+  - pandora.com
+  - soundcloud.com
+  - tidal.com
+  - deezer.com
+  
+  # Gaming
+  - steampowered.com
+  - epicgames.com
+  - origin.com
+  - ubisoft.com
+  - riotgames.com
+  - blizzard.com
+  - ea.com
+  - xbox.com
+  - playstation.com
+  
+  # Social Media
+  - facebook.com
+  - instagram.com
+  - twitter.com
+  - reddit.com
+  - tiktok.com
+  - snapchat.com
+  - pinterest.com
+
+work_ports:
+  - 22    # SSH
+  - 3389  # RDP
+  - 5900  # VNC
+  - 8080  # Web APIs
+
+entertainment_ports:
+  - 1935  # RTMP (streaming)
+  - 27015 # Steam gaming
