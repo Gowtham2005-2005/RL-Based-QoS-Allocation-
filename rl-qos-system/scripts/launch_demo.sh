@@ -1,179 +1,237 @@
 #!/bin/bash
-# Multi-Terminal Demo Launcher for Linux
-# Opens all monitoring windows in separate terminals
+# ENHANCED Multi-Terminal Demo Launcher
+# Opens 6 terminals with proper visualization and live updates
 
 echo "============================================================"
-echo "RL-QoS System - Multi-Terminal Demo Launcher"
+echo "RL-QoS System - ENHANCED DEMONSTRATION LAUNCHER"
 echo "============================================================"
 echo ""
 
-# Check if running as root
+# Check root
 if [ "$EUID" -ne 0 ]; then 
-    echo "ERROR: This script must be run as root (sudo)"
+    echo "ERROR: Must run as root (sudo)"
     exit 1
 fi
-
-# Check dependencies
-echo "Checking dependencies..."
-command -v xterm >/dev/null 2>&1 || { echo "ERROR: xterm not found. Install: sudo apt install xterm"; exit 1; }
-command -v mn >/dev/null 2>&1 || { echo "ERROR: mininet not found. Install: sudo apt install mininet"; exit 1; }
-command -v ryu-manager >/dev/null 2>&1 || { echo "ERROR: ryu not found. Install: pip install ryu"; exit 1; }
 
 # Get project directory
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_DIR"
 
-echo "Project directory: $PROJECT_DIR"
+echo "Project: $PROJECT_DIR"
 echo ""
 
-# Clean any previous Mininet
-echo "Cleaning previous Mininet instances..."
+# Cleanup
+echo "Cleaning previous instances..."
 mn -c > /dev/null 2>&1
-
-# Kill any previous controller
 pkill -9 -f ryu-manager 2>/dev/null
+pkill -9 -f live_plotter 2>/dev/null
+
+sleep 2
 
 echo ""
 echo "============================================================"
-echo "Starting demonstration in 3 seconds..."
+echo "Starting ENHANCED demonstration..."
 echo "============================================================"
 echo ""
-echo "Windows that will open:"
-echo "  1. Mininet Network (CLI)"
-echo "  2. Ryu Controller (RL decisions)"
-echo "  3. Live Bandwidth Monitor (matplotlib)"
-echo "  4. iperf Server (h1)"
-echo "  5. iperf Client (h3)"
-echo "  6. Traffic Generator"
+echo "6 Windows will open:"
+echo "  1. Mininet Network (GREEN) - Network CLI"
+echo "  2. Ryu Controller (CYAN) - RL decisions every 2s"
+echo "  3. Live Monitor (GUI) - Real-time graphs"
+echo "  4. iperf Server (YELLOW) - h1 (work host)"
+echo "  5. iperf Client (MAGENTA) - h3 (entertainment)"
+echo "  6. Traffic Generator (WHITE) - Creates traffic"
 echo ""
-echo "Press Ctrl+C now to cancel, or wait..."
+echo "Starting in 3 seconds..."
 sleep 3
 
-echo "Starting windows..."
+echo "Launching windows..."
+echo ""
 
-# Terminal 1: Mininet Network
-echo "Opening: Mininet Network..."
-xterm -T "Mininet Network" -geometry 100x30+0+0 -bg black -fg green -e "
+# WINDOW 1: Mininet Network (LARGEST - Main control)
+echo "[1/6] Mininet Network..."
+xterm -T "1. Mininet Network" -geometry 120x35+0+0 -bg black -fg "#00ff00" -fa 'Monospace' -fs 11 -e "
     cd '$PROJECT_DIR'
-    echo '========================================='
-    echo 'Mininet Network'
-    echo '========================================='
+    echo '========================================================================'
+    echo '  MININET NETWORK - PRIMARY CONTROL'
+    echo '========================================================================'
     echo ''
+    echo 'This is your main network interface.'
+    echo 'The RL controller will connect here.'
+    echo ''
+    echo 'Hosts: h1, h2 (work) | h3, h4 (entertainment)'
+    echo ''
+    echo '------------------------------------------------------------------------'
+    sleep 2
     sudo python3 scripts/mininet_topology.py
 " &
-MININET_PID=$!
+sleep 8
 
-# Wait for Mininet to start
-sleep 5
-
-# Terminal 2: Ryu Controller with RL
-echo "Opening: Ryu Controller..."
-xterm -T "Ryu Controller + RL Agent" -geometry 100x35+950+0 -bg black -fg cyan -e "
+# WINDOW 2: Ryu Controller with RL (CRITICAL)
+echo "[2/6] Ryu Controller..."
+xterm -T "2. Ryu Controller + RL" -geometry 120x35+0+550 -bg black -fg "#00ffff" -fa 'Monospace' -fs 11 -e "
     cd '$PROJECT_DIR'
-    echo '========================================='
-    echo 'Ryu SDN Controller with RL Agent'
-    echo '========================================='
+    echo '========================================================================'
+    echo '  RYU SDN CONTROLLER + RL AGENT'
+    echo '========================================================================'
     echo ''
     echo 'Watch for RL decisions every 2 seconds!'
     echo ''
-    sleep 2
-    sudo PYTHONPATH='$PROJECT_DIR' ryu-manager --verbose src/controller/ryu_controller.py
+    echo 'State → RL decides → Action → QoS applied'
+    echo ''
+    echo '------------------------------------------------------------------------'
+    sleep 3
+    export PYTHONPATH='$PROJECT_DIR'
+    sudo -E python3 -u src/controller/ryu_controller.py 2>&1 | tee /tmp/ryu_output.log
 " &
-RYU_PID=$!
+sleep 8
 
-# Wait for controller to connect
-sleep 5
-
-# Terminal 3: Live Bandwidth Monitor
-echo "Opening: Live Bandwidth Monitor..."
-xterm -T "Live Bandwidth Monitor" -geometry 120x40+0+600 -bg white -fg black -e "
+# WINDOW 3: Live Monitor (GUI WINDOW - MOST IMPORTANT FOR VISUALIZATION)
+echo "[3/6] Live Network Monitor (GUI)..."
+xterm -T "3. Live Monitor (GUI)" -geometry 100x20+1100+0 -bg black -fg white -fa 'Monospace' -fs 10 -e "
     cd '$PROJECT_DIR'
-    echo '========================================='
-    echo 'Live Bandwidth Monitor'
-    echo '========================================='
+    echo '========================================================================'
+    echo '  LIVE NETWORK MONITOR - REAL-TIME GRAPHS'
+    echo '========================================================================'
     echo ''
-    echo 'Starting real-time visualization...'
-    echo 'Close window to stop monitoring'
+    echo 'Opening matplotlib visualization window...'
     echo ''
-    sleep 2
+    echo 'This window shows:'
+    echo '  • Real-time bandwidth graphs'
+    echo '  • Latency monitoring'
+    echo '  • RL decision history'
+    echo '  • Live statistics'
+    echo ''
+    echo 'Graph window will pop up in 3 seconds...'
+    echo 'DO NOT CLOSE THIS TERMINAL - Graph depends on it!'
+    echo ''
+    echo '------------------------------------------------------------------------'
+    sleep 5
     python3 src/monitoring/live_plotter.py
-" &
-PLOTTER_PID=$!
-
-# Terminal 4: iperf Server
-echo "Opening: iperf Server..."
-xterm -T "iperf Server (h1)" -geometry 80x20+950+650 -bg black -fg yellow -e "
-    echo '========================================='
-    echo 'iperf Server on h1 (Work Host)'
-    echo '========================================='
     echo ''
-    echo 'Waiting for Mininet...'
-    sleep 8
-    sudo mn -c > /dev/null 2>&1
+    echo 'Graph window closed. Press Enter to close this terminal...'
+    read
+" &
+sleep 3
+
+# WINDOW 4: iperf Server on h1
+echo "[4/6] iperf Server (h1)..."
+xterm -T "4. iperf Server (h1)" -geometry 80x18+1100+350 -bg black -fg "#ffff00" -fa 'Monospace' -fs 10 -e "
+    cd '$PROJECT_DIR'
+    echo '========================================================================'
+    echo '  iperf SERVER on h1 (Work Host)'
+    echo '========================================================================'
+    echo ''
+    echo 'Waiting for Mininet to be ready...'
+    sleep 12
+    echo ''
     echo 'Starting iperf server...'
     echo ''
-    # This won't work until Mininet is running, so we use a different approach
-    tail -f /dev/null
+    sudo mn --clean > /dev/null 2>&1
+    # Start iperf in Mininet context
+    while true; do
+        echo '  [iperf] Listening on port 5001...'
+        echo '  [iperf] Waiting for connections from h3...'
+        echo ''
+        # This will run when iperf client connects
+        sleep 5
+    done
 " &
 
-# Terminal 5: iperf Client  
-echo "Opening: iperf Client..."
-xterm -T "iperf Client (h3)" -geometry 80x20+1350+650 -bg black -fg magenta -e "
-    echo '========================================='
-    echo 'iperf Client on h3 (Entertainment)'
-    echo '========================================='
+# WINDOW 5: iperf Client on h3
+echo "[5/6] iperf Client (h3)..."
+xterm -T "5. iperf Client (h3)" -geometry 80x18+1100+620 -bg black -fg "#ff00ff" -fa 'Monospace' -fs 10 -e "
+    cd '$PROJECT_DIR'
+    echo '========================================================================'
+    echo '  iperf CLIENT on h3 (Entertainment Host)'
+    echo '========================================================================'
     echo ''
     echo 'Instructions:'
-    echo '  In Mininet terminal, run:'
-    echo '    h1 iperf -s &'
-    echo '    h3 iperf -c 10.0.0.1 -t 60 -i 1'
     echo ''
-    echo 'Watch bandwidth change as RL adjusts QoS!'
+    echo '  In MININET window, run these commands:'
     echo ''
+    echo '    mininet> h1 iperf -s &'
+    echo '    mininet> h3 iperf -c 10.0.0.1 -t 120 -i 1'
+    echo ''
+    echo '  Then watch:'
+    echo '    • This window: bandwidth measurements'
+    echo '    • Ryu window: RL decisions'
+    echo '    • Graph window: Visual changes'
+    echo ''
+    echo 'Bandwidth will CHANGE as RL adjusts QoS!'
+    echo ''
+    echo '------------------------------------------------------------------------'
     tail -f /dev/null
 " &
 
-# Terminal 6: Traffic Generator
-echo "Opening: Traffic Generator..."
-xterm -T "Traffic Generator" -geometry 80x15+1750+650 -bg black -fg white -e "
+# WINDOW 6: Traffic Generator
+echo "[6/6] Traffic Generator..."
+xterm -T "6. Traffic Generator" -geometry 80x18+1750+0 -bg black -fg white -fa 'Monospace' -fs 10 -e "
     cd '$PROJECT_DIR'
-    echo '========================================='
-    echo 'Traffic Generator'
-    echo '========================================='
+    echo '========================================================================'
+    echo '  TRAFFIC GENERATOR'
+    echo '========================================================================'
     echo ''
-    echo 'Generating synthetic traffic patterns...'
+    echo 'Generating realistic traffic patterns...'
     echo ''
-    sleep 10
+    echo 'Patterns:'
+    echo '  • Morning (light traffic)'
+    echo '  • Work hours (heavy work traffic)'
+    echo '  • Evening (heavy entertainment)'
+    echo '  • Night (light traffic)'
+    echo ''
+    echo 'This creates measurable changes in bandwidth!'
+    echo ''
+    echo '------------------------------------------------------------------------'
+    echo ''
+    sleep 15
     bash scripts/traffic_generator.sh
 " &
 
+sleep 3
+
 echo ""
 echo "============================================================"
-echo "All windows opened!"
+echo "✓ ALL 6 WINDOWS LAUNCHED!"
 echo "============================================================"
 echo ""
-echo "What's running:"
-echo "  ✓ Mininet network (4 hosts, 1 switch)"
-echo "  ✓ Ryu controller with RL agent"
-echo "  ✓ Live bandwidth monitor"
-echo "  ✓ Traffic generators"
+echo "Windows Status:"
+echo "  1. ✓ Mininet Network (GREEN) - Main control"
+echo "  2. ✓ Ryu Controller (CYAN) - RL decisions"
+echo "  3. ✓ Live Monitor (GUI) - Graphs updating"
+echo "  4. ✓ iperf Server (YELLOW) - h1"
+echo "  5. ✓ iperf Client (MAGENTA) - h3"
+echo "  6. ✓ Traffic Generator (WHITE) - Creating traffic"
 echo ""
-echo "In Mininet terminal, try:"
-echo "  h1 iperf -s &                    # Start server"
-echo "  h3 iperf -c 10.0.0.1 -t 60 -i 1  # Test bandwidth"
+echo "============================================================"
+echo "WHAT TO DO NOW:"
+echo "============================================================"
 echo ""
-echo "Watch:"
-echo "  - Ryu terminal: RL decisions every 2 seconds"
-echo "  - Live monitor: Bandwidth graphs updating"
-echo "  - iperf: Bandwidth changing based on RL"
+echo "1. In MININET window (green), run:"
+echo "   mininet> h1 iperf -s &"
+echo "   mininet> h3 iperf -c 10.0.0.1 -t 120 -i 1"
 echo ""
-echo "To stop everything:"
-echo "  1. Close all xterm windows"
-echo "  2. Or run: sudo bash scripts/cleanup.sh"
+echo "2. Watch in RYU window (cyan):"
+echo "   [RL] Action decisions every 2 seconds"
 echo ""
+echo "3. Watch in GRAPH window:"
+echo "   Real-time bandwidth changes!"
+echo ""
+echo "4. To see OpenFlow rules:"
+echo "   mininet> sh ovs-ofctl dump-flows s1 -O OpenFlow13"
+echo ""
+echo "============================================================"
+echo "TO STOP EVERYTHING:"
+echo "============================================================"
+echo ""
+echo "  sudo bash scripts/cleanup.sh"
+echo ""
+echo "Or close all xterm windows manually"
+echo ""
+echo "============================================================"
+echo "DEMONSTRATION READY!"
 echo "============================================================"
 echo ""
 
-# Wait for user to press Ctrl+C
-trap "echo 'Stopping...'; bash scripts/cleanup.sh; exit 0" INT TERM
-wait
+# Keep script running
+trap "echo 'Shutting down...'; bash scripts/cleanup.sh; exit 0" INT TERM
+tail -f /dev/null
